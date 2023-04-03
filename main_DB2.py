@@ -1,6 +1,5 @@
 import libemg
 from libemg.utils import make_regex
-from utils import prepare_data
 import numpy as np
 import matplotlib.pyplot as plt
 import os

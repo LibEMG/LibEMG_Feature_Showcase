@@ -1,6 +1,5 @@
 import libemg
 from libemg.utils import make_regex
-from utils import prepare_data
 import numpy as np
 import matplotlib.pyplot as plt
 import os
@@ -8,12 +7,12 @@ import os
 # some parameters/ dataset details:
 window_size = 200
 window_increment = 100
-num_subjects = 12
+num_subjects = 1
 
 feature_parameters = {"WAMP_threshold":1e-6}
 
 if __name__ == "__main__":
-    dataset = libemg.datasets.NinaproDB8(save_dir = ".", dataset_name="NinaproDB8")
+    dataset = libemg.datasets.NinaproDB8(save_dir = ".", dataset_name="Ninapro_DB8")
     dataset.convert_to_compatible()
     
 
@@ -29,7 +28,7 @@ if __name__ == "__main__":
     reps_values = [str(r) for r in range(22)]
     classes_values = [str(c) for c in range(9)]
     
-    subject_list = [0,1,2,3,4,5,6,7,8,9,10,11]
+    subject_list = [0]
     if not os.path.exists("results.npy"):
         for s in subject_list:
             odh = dataset.prepare_data(subjects_values=[str(s+1)])
@@ -67,8 +66,8 @@ if __name__ == "__main__":
     else:
         results = np.load("results.npy")
     # this is something we actually address in the next example of the paper -- how to find the right parameters for certain features so you don't get nans!
-    results = np.delete(results, 10, 0) # 10th subject has different dynamic range for some reason, so we remove it
-    results = np.delete(results, 10, 0) # 11th subject has different dynamic range for some reason, so we remove it
+    # results = np.delete(results, 10, 0) # 10th subject has different dynamic range for some reason, so we remove it
+    # results = np.delete(results, 10, 0) # 11th subject has different dynamic range for some reason, so we remove it
     mean_feature_accuracy = results.mean(axis=0)
     std_feature_accuracy  = results.std(axis=0)
 
