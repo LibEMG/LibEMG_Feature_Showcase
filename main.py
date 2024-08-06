@@ -5,15 +5,12 @@ import matplotlib.pyplot as plt
 import os
 
 # some parameters/ dataset details:
-window_size = 400
-window_increment = 200
-num_subjects = 40
-
-feature_parameters = {"WAMP_threshold":1e-6}
+window_size = 200
+window_increment = 100
+num_subjects = 22
 
 if __name__ == "__main__":
-    dataset = libemg.datasets.NinaproDB2(save_dir = ".", dataset_name="NinaproDB2")
-    dataset.convert_to_compatible()
+    dataset = libemg.datasets._3DCDataset(save_dir = ".")
     
 
     fe = libemg.feature_extractor.FeatureExtractor()
@@ -27,16 +24,15 @@ if __name__ == "__main__":
 
     results = np.zeros((num_subjects, len(feature_list)+len(feature_group_list)))
     
-    # 12 subjects
     reps_values = [str(r) for r in range(6)]
     classes_values = [str(c) for c in range(40)]
     
-    subject_list = list(range(40))
+    subject_list = list(range(num_subjects))
     if not os.path.exists("results.npy"):
         for s in subject_list:
             odh = dataset.prepare_data(subjects_values=[str(s+1)], classes_values=classes_values)
-            train_odh = odh.isolate_data("reps",list(range(5)))
-            test_odh = odh.isolate_data("reps", list(range(5,6)))
+            train_odh = odh.isolate_data("sets",[0])
+            test_odh = odh.isolate_data("sets",[1])
             train_windows, train_metadata = train_odh.parse_windows(window_size, window_increment)
             test_windows,  test_metadata  = test_odh.parse_windows(window_size, window_increment)
 
@@ -44,20 +40,20 @@ if __name__ == "__main__":
             for f in range(len(feature_list)+len(feature_group_list)):
                 if f < len(feature_list):
                     feature = feature_list[f]
-                    train_features = fe.extract_features([feature], train_windows,feature_parameters)
-                    test_features = fe.extract_features([feature], test_windows,feature_parameters)
+                    train_features = fe.extract_features([feature], train_windows)
+                    test_features = fe.extract_features([feature], test_windows)
                 else:
                     feature = list(feature_group_list.keys())[f-len(feature_list)]
-                    train_features = fe.extract_feature_group(feature, train_windows,feature_parameters)
-                    test_features = fe.extract_feature_group(feature, test_windows,feature_parameters)
+                    train_features = fe.extract_feature_group(feature, train_windows)
+                    test_features = fe.extract_feature_group(feature, test_windows)
                 feature_dictionary = {
                     "training_features": train_features,
                     "training_labels": train_metadata["classes"]
                 }
             
                 # train classifier
-                clf = libemg.emg_classifier.EMGClassifier()
-                clf.fit("LDA", feature_dictionary.copy())
+                clf = libemg.emg_predictor.EMGClassifier("LDA")
+                clf.fit(feature_dictionary.copy())
 
                 preds = clf.run(test_features)
                 
