@@ -10,9 +10,8 @@ window_increment = 100
 num_subjects = 22
 
 if __name__ == "__main__":
-    dataset = libemg.datasets._3DCDataset(save_dir = ".")
+    dataset = libemg.datasets._3DCDataset()
     
-
     fe = libemg.feature_extractor.FeatureExtractor()
     feature_list = fe.get_feature_list()
     feature_list.remove("FUZZYEN")
@@ -23,16 +22,13 @@ if __name__ == "__main__":
     metrics = ["CA"]
 
     results = np.zeros((num_subjects, len(feature_list)+len(feature_group_list)))
-    
-    reps_values = [str(r) for r in range(6)]
-    classes_values = [str(c) for c in range(40)]
-    
+        
     subject_list = list(range(num_subjects))
     if not os.path.exists("results.npy"):
         for s in subject_list:
-            odh = dataset.prepare_data(subjects_values=[str(s+1)], classes_values=classes_values)
-            train_odh = odh.isolate_data("sets",[0])
-            test_odh = odh.isolate_data("sets",[1])
+            data = dataset.prepare_data(subjects=[s])
+            train_odh = data['Train']
+            test_odh = data['Test']
             train_windows, train_metadata = train_odh.parse_windows(window_size, window_increment)
             test_windows,  test_metadata  = test_odh.parse_windows(window_size, window_increment)
 
